@@ -10,7 +10,7 @@ export default function SearchPage() {
     if (!query.trim()) return
     setLoading(true)
     try {
-      const res = await fetch("http://127.0.0.1:8000/search", {
+      const res = await fetch("https://faculty-project-fastapi.onrender.com/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query })
