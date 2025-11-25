@@ -16,7 +16,7 @@ export default function SearchPage() {
       const res = await fetch("https://faculty-project-fastapi.onrender.com/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query })
+        body: JSON.stringify({ "query": query, "top_k": 50 })
       })
       const data = await res.json()
       if (data.results) setResults(data.results)
@@ -42,10 +42,6 @@ export default function SearchPage() {
             <Sparkles className="w-6 h-6 text-indigo-600" />
             <span className="text-xl font-semibold text-slate-800">ProfMatch</span>
           </div>
-          <nav className="flex gap-6 text-sm text-slate-600">
-            <a href="#" className="hover:text-indigo-600 transition">About</a>
-            <a href="#" className="hover:text-indigo-600 transition">How it works</a>
-          </nav>
         </div>
       </header>
 
@@ -60,7 +56,6 @@ export default function SearchPage() {
             Connect with professors who share your academic passions. 
             Discover mentors aligned with your research interests in seconds.
           </p>
-
           {/* Search Box - 30% secondary color (white) */}
           <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/50 p-3 mb-8 max-w-2xl mx-auto border border-slate-100">
             <div className="flex items-center gap-3">
@@ -106,7 +101,7 @@ export default function SearchPage() {
           <div className="w-full max-w-3xl animate-in fade-in duration-500">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold text-slate-800">
-                Found {results.length} {results.length === 1 ? 'match' : 'matches'}
+                Top {results.length} {results.length === 1 ? 'match' : 'matches'}
               </h2>
               <button 
                 onClick={() => setResults([])}
@@ -119,7 +114,7 @@ export default function SearchPage() {
               {results.map((r, idx) => (
                 <a
                   key={idx}
-                  href={r['Personal Website'] || r.personal_website || '#'}
+                  href={r['Personal Website']}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="block bg-white p-6 rounded-xl border border-slate-200 hover:border-indigo-300 hover:shadow-lg transition-all duration-200 group cursor-pointer"
@@ -128,11 +123,14 @@ export default function SearchPage() {
                   <div className="flex items-start justify-between mb-4 pb-4 border-b border-slate-100">
                     <div className="flex-1">
                       <h3 className="text-2xl font-bold text-slate-800 mb-1 group-hover:text-indigo-600 transition">
-                        {r.Professor || r.professor || 'Unknown Professor'}
+                        {r.Professor}
                       </h3>
                       <div className="flex items-center gap-3 text-sm">
                         <span className="inline-flex items-center px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 font-medium">
-                          {r.Department || r.department || 'Department'}
+                          {r.University}
+                        </span>
+                        <span className="inline-flex items-center px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 font-medium">
+                          {r.Department}
                         </span>
                         {r.Similarity !== undefined && (
                           <span className="text-slate-500">
