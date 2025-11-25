@@ -177,7 +177,7 @@ export default function SearchPage() {
 
       {/* Footer - subtle */}
       <footer className="bg-white border-t border-slate-200 py-6 px-6 text-center text-sm text-slate-500">
-        <p>© 2024 ProfMatch. Connecting students with inspiring mentors.</p>
+        <p>Connecting inspiring students with professors.</p>
       </footer>
     </div>
   )
