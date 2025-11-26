@@ -1,37 +1,44 @@
-'use client'
+import { Sparkles } from "lucide-react"
+import SearchBox from './components/SearchBox'
+import FeaturePills from './components/FeaturePills'
 
-import { useState } from "react";
-
-export default function Home() {
-  const [data, setData] = useState([]);
-  const [table, setTable] = useState("");
-
-  // Fetch data from API
-  const fetchTable = async (tableName: string) => {
-    setTable(tableName);
-    try {
-      const res = await fetch(`/api/${tableName}`);
-      const json = await res.json();
-      setData(json);
-    } catch (error) {
-      console.error("Failed to fetch table:", error);
-      setData([]);
-    }
-  };
-
+export default function SearchPage() {
   return (
-    <div>
-      <h1>Database Tables</h1>
-      <div style={{ marginBottom: "20px" }}>
-        <h1><button onClick={() => fetchTable("department")}>Department</button></h1>
-        <h1><button onClick={() => fetchTable("interest")}>Interest</button></h1>
-        <h1><button onClick={() => fetchTable("professor")}>Professor</button></h1>
-      </div>
+    <div className="min-h-screen bg-slate-50 flex flex-col">
+      {/* Header - Server Rendered */}
+      <header className="bg-white border-b border-slate-200 px-6 py-4">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-6 h-6 text-indigo-600" />
+            <span className="text-xl font-semibold text-slate-800">ProfMatch</span>
+          </div>
+        </div>
+      </header>
 
-      <h2>Table: {table}</h2>
-      <pre style={{ background: "#f0f0f0", padding: "10px" }}>
-        {JSON.stringify(data, null, 2)}
-      </pre>
+      {/* Hero Section - Server Rendered */}
+      <main className="flex-1 flex flex-col items-center justify-center px-6 pb-16">
+        <div className="max-w-3xl w-full text-center mb-12">
+          <h1 className="text-5xl md:text-6xl font-bold text-slate-800 mb-4 leading-tight">
+            Find Your Perfect<br />
+            <span className="text-indigo-600">Research Match</span>
+          </h1>
+          <p className="text-lg text-slate-600 mb-12 max-w-2xl mx-auto">
+            Connect with professors who share your academic passions. 
+            Discover mentors aligned with your research interests in seconds.
+          </p>
+          
+          {/* Client Component - Search Box and Results */}
+          <SearchBox />
+          
+          {/* Server Component - Feature Pills */}
+          <FeaturePills />
+        </div>
+      </main>
+
+      {/* Footer - Server Rendered */}
+      <footer className="bg-white border-t border-slate-200 py-6 px-6 text-center text-sm text-slate-500">
+        <p>Connecting inspiring students with professors.</p>
+      </footer>
     </div>
-  );
+  )
 }
