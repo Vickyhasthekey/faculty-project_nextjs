@@ -5,7 +5,7 @@ export async function POST(request: NextRequest) {
 
 
     // Deployed backend
-    const upstream = await fetch("https://faculty-project-fastapi.onrender.com/chat", {
+    const upstream = await fetch("https://faculty-project-fastapi.vercel.app/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),

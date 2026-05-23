@@ -5,7 +5,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     
     // Deployed backend
-    const response = await fetch("https://faculty-project-fastapi.onrender.com/search", {
+    const response = await fetch("https://faculty-project-fastapi.vercel.app/search", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body)
