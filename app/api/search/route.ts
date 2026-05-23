@@ -4,7 +4,15 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     
-    const response = await fetch("https://faculty-project-fastapi.onrender.com/search", {
+    // Deployed backend
+    // const response = await fetch("https://faculty-project-fastapi.onrender.com/search", {
+    //   method: "POST",
+    //   headers: { "Content-Type": "application/json" },
+    //   body: JSON.stringify(body)
+    // })
+
+    // Local backend
+    const response = await fetch("http://localhost:8000/search", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body)

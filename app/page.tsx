@@ -1,6 +1,7 @@
 import { Sparkles } from "lucide-react"
 import SearchBox from './components/SearchBox'
 import FeaturePills from './components/FeaturePills'
+import ChatBox from './components/ChatBox'
 
 export default function SearchPage() {
   return (
@@ -34,6 +35,9 @@ export default function SearchPage() {
           <FeaturePills />
         </div>
       </main>
+
+      {/* Floating chat widget */}
+      <ChatBox />
 
       {/* Footer - Server Rendered */}
       <footer className="bg-white border-t border-slate-200 py-6 px-6 text-center text-sm text-slate-500">
