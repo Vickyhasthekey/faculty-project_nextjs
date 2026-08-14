@@ -1,25 +1,54 @@
 'use client'
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Search } from "lucide-react"
 import ResultsList from './ResultsList'
 
+type Filters = { universities: string[]; departments: string[] }
+
 export default function SearchBox() {
   const [query, setQuery] = useState("")
+  const [university, setUniversity] = useState("")
+  const [department, setDepartment] = useState("")
+  const [filters, setFilters] = useState<Filters>({ universities: [], departments: [] })
   const [results, setResults] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [hasSearched, setHasSearched] = useState(false)
+  const [statusMessage, setStatusMessage] = useState("")
+
+  useEffect(() => {
+    fetch("/api/filters")
+      .then((res) => res.json())
+      .then((data) => {
+        setFilters({
+          universities: data.universities ?? [],
+          departments: data.departments ?? [],
+        })
+      })
+      .catch(() => undefined)
+  }, [])
 
   const handleSearch = async () => {
     if (!query.trim()) return
     setLoading(true)
     setHasSearched(true)
+    setStatusMessage("")
     try {
       const res = await fetch("/api/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query, top_k: 50 })
+        body: JSON.stringify({
+          query,
+          top_k: 20,
+          university: university || undefined,
+          department: department || undefined,
+        })
       })
       const data = await res.json()
+      if (data.warming_up || res.status === 503) {
+        setResults([])
+        setStatusMessage("Service is starting up. Please try again in a moment.")
+        return
+      }
       if (data.results) setResults(data.results)
       else setResults([])
     } catch (err) {
@@ -37,7 +66,7 @@ export default function SearchBox() {
   return (
     <>
       {/* Enhanced Search Input */}
-      <div className="bg-white rounded-2xl shadow-2xl shadow-indigo-200/30 p-2 mb-10 max-w-3xl mx-auto border border-slate-200/50 backdrop-blur-sm transition-all duration-300 hover:shadow-indigo-300/40">
+      <div className="bg-white rounded-2xl shadow-2xl shadow-indigo-200/30 p-2 mb-4 max-w-3xl mx-auto border border-slate-200/50 backdrop-blur-sm transition-all duration-300 hover:shadow-indigo-300/40">
         <div className="flex items-center gap-3">
           <div className="ml-4 p-2 bg-linear-to-br from-indigo-50 to-purple-50 rounded-lg">
             <Search className="w-5 h-5 text-indigo-600" />
@@ -67,13 +96,40 @@ export default function SearchBox() {
         </div>
       </div>
 
+      <div className="flex flex-wrap gap-3 justify-center mb-10 max-w-3xl mx-auto">
+        <select
+          value={university}
+          onChange={(e) => setUniversity(e.target.value)}
+          className="bg-white border border-slate-200 rounded-full px-4 py-2 text-sm text-slate-700 focus:outline-none focus:border-indigo-300"
+        >
+          <option value="">All universities</option>
+          {filters.universities.map((name) => (
+            <option key={name} value={name}>{name}</option>
+          ))}
+        </select>
+        <select
+          value={department}
+          onChange={(e) => setDepartment(e.target.value)}
+          className="bg-white border border-slate-200 rounded-full px-4 py-2 text-sm text-slate-700 focus:outline-none focus:border-indigo-300"
+        >
+          <option value="">All departments</option>
+          {filters.departments.map((name) => (
+            <option key={name} value={name}>{name}</option>
+          ))}
+        </select>
+      </div>
+
       {/* Results */}
       {results.length > 0 && (
         <ResultsList results={results} onClear={() => setResults([])} />
       )}
 
+      {statusMessage && (
+        <div className="text-center mt-8 text-indigo-700 font-medium">{statusMessage}</div>
+      )}
+
       {/* No Results Message */}
-      {!loading && hasSearched && results.length === 0 && (
+      {!loading && hasSearched && results.length === 0 && !statusMessage && (
         <div className="text-center mt-12 bg-white/60 backdrop-blur-sm p-8 rounded-2xl border border-slate-200/50 max-w-md mx-auto">
           <div className="bg-slate-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
             <Search className="w-8 h-8 text-slate-400" />

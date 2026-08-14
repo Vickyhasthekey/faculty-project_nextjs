@@ -32,6 +32,11 @@ export default function ChatBox() {
         body: JSON.stringify({ message: text, history }),
       })
 
+      if (res.status === 503) {
+        const payload = await res.json().catch(() => ({ error: "Service starting" }))
+        throw new Error(payload.warming_up ? "Service is starting up. Please try again in a moment." : (payload.error || "Service unavailable"))
+      }
+
       if (!res.body) throw new Error("No response body")
 
       const reader = res.body.getReader()
@@ -83,7 +88,7 @@ export default function ChatBox() {
         const updated = [...prev]
         const last = updated[updated.length - 1]
         if (last && last.role === "assistant" && last.content === "") {
-          updated[updated.length - 1] = { ...last, content: "Something went wrong." }
+          updated[updated.length - 1] = { ...last, content: err instanceof Error ? err.message : "Something went wrong." }
         }
         return updated
       })
