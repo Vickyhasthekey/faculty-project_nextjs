@@ -1,24 +1,27 @@
 # ProfMatch (Next.js)
 
-Frontend for faculty semantic search and RAG chat. Search and chat are proxied to the FastAPI repo (`faculty_project_fastapi`).
+Faculty search and RAG chat run **inside this Vercel/Next.js app**. There is no Render backend on the search/chat path.
+
+- Search: hashed 384-d vectors over a **bundled** list of 665 professors (UCLA + CWRU). Every name in that file is equally fast — nothing is left on Render.
+- NUS / `nus.edu` rows are excluded. The live dump had none; the filter is still applied.
+- Chat: Gemini (`GEMINI_API_KEY`) with retrieved faculty stuffed into the prompt
 
 ## Local setup
 
 ```bash
-cp .env.example .env.local
+cp .env.example .env.local   # add GEMINI_API_KEY for chat; search works without it
 npm install
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
 
-`FACULTY_API_URL` in `.env.local` should point at a running FastAPI server:
+Search `computer vision`, filter UCLA, then try the chat widget.
 
-- Local backend: `http://localhost:8000`
-- Deployed backend: `https://faculty-project-fastapi.onrender.com`
+```bash
+npm test
+```
 
-Next.js API routes retry the backend on HTTP 503 (Render cold start) before returning “Service starting” to the UI.
+After you push to GitHub, Vercel deploys this repo. You can delete the local clone; GitHub + Vercel keep the site. Add `GEMINI_API_KEY` in the Vercel project env vars for chat.
 
-University and department dropdowns load from `GET /api/filters`. Search results are grouped one card per professor.
-
-MySQL env vars (`MYSQL_*`) are only used by the leftover `/testing` page (`/api/professor`, `/api/interest`, `/api/department`). Search and chat do not query MySQL from Next.js.
+The FastAPI/Render service is no longer required for this frontend.

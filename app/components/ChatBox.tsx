@@ -32,9 +32,9 @@ export default function ChatBox() {
         body: JSON.stringify({ message: text, history }),
       })
 
-      if (res.status === 503) {
-        const payload = await res.json().catch(() => ({ error: "Service starting" }))
-        throw new Error(payload.warming_up ? "Service is starting up. Please try again in a moment." : (payload.error || "Service unavailable"))
+      if (!res.ok) {
+        const payload = await res.json().catch(() => ({ error: `Chat failed (${res.status})` }))
+        throw new Error(payload.error || "Chat failed")
       }
 
       if (!res.body) throw new Error("No response body")

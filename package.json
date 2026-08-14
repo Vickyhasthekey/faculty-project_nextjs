@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --experimental-strip-types --test lib/fetchBackend.test.ts"
+    "test": "node --experimental-strip-types --test lib/search.test.ts lib/embed.test.ts lib/faculty.test.ts"
   },
   "dependencies": {
     "lucide-react": "^0.554.0",

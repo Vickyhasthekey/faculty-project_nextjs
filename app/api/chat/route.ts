@@ -1,27 +1,20 @@
-import { NextRequest, NextResponse } from "next/server"
-import { fetchBackend } from "@/lib/fetchBackend"
+import { NextRequest } from "next/server"
+import { streamGeminiChat } from "@/lib/chat"
+
+export const runtime = "nodejs"
 
 export async function POST(request: NextRequest) {
   const body = await request.json()
-  const upstream = await fetchBackend("/chat", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  })
-
-  if (upstream.status === 503) {
-    return NextResponse.json(
-      { error: "Service starting", warming_up: true },
-      { status: 503 },
-    )
+  const message = String(body.message ?? "").trim()
+  if (!message) {
+    return new Response(JSON.stringify({ error: "message is required" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    })
   }
 
-  if (!upstream.body) {
-    return NextResponse.json({ error: "No response body" }, { status: 502 })
-  }
-
-  return new Response(upstream.body, {
-    status: upstream.status,
+  const stream = await streamGeminiChat(message, body.history)
+  return new Response(stream, {
     headers: {
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache",

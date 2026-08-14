@@ -1,24 +1,21 @@
 import { NextRequest, NextResponse } from "next/server"
-import { fetchBackend } from "@/lib/fetchBackend"
+import { searchFaculty } from "@/lib/faculty"
+
+export const runtime = "nodejs"
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const response = await fetchBackend("/search", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    })
-
-    if (response.status === 503) {
-      return NextResponse.json(
-        { error: "Service starting", warming_up: true },
-        { status: 503 },
-      )
+    const query = String(body.query ?? "").trim()
+    if (!query) {
+      return NextResponse.json({ error: "query is required" }, { status: 400 })
     }
-
-    const data = await response.json()
-    return NextResponse.json(data, { status: response.status })
+    const results = searchFaculty(query, {
+      topK: body.top_k ?? 20,
+      university: body.university || undefined,
+      department: body.department || undefined,
+    })
+    return NextResponse.json({ query, results })
   } catch (error) {
     console.error("Search API error:", error)
     return NextResponse.json(
