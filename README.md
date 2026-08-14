@@ -5,7 +5,7 @@ Faculty search and RAG chat run **inside this Vercel/Next.js app**. There is no 
 - Search: hashed 384-d vectors over a **bundled** list of 665 professors (UCLA + CWRU). Every name in that file is equally fast — nothing is left on Render.
 - NUS / `nus.edu` rows are excluded. The live dump had none; the filter is still applied.
 - Chat: Gemini (`GEMINI_API_KEY`) with retrieved faculty stuffed into the prompt
-
+ 
 ## Local setup
 
 ```bash
