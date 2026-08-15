@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { searchFaculty } from "@/lib/faculty"
 
 export const runtime = "nodejs"
+export const maxDuration = 60
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,7 +11,7 @@ export async function POST(request: NextRequest) {
     if (!query) {
       return NextResponse.json({ error: "query is required" }, { status: 400 })
     }
-    const results = searchFaculty(query, {
+    const results = await searchFaculty(query, {
       topK: body.top_k ?? 20,
       university: body.university || undefined,
       department: body.department || undefined,

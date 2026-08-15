@@ -1,9 +1,8 @@
 import { Users, BookOpen, Sparkles } from "lucide-react"
-import { FACULTY_ROWS } from "@/lib/faculty-data"
+import { facultyStats } from "@/lib/faculty"
 
-export default function FeaturePills() {
-  const professors = new Set(FACULTY_ROWS.map((row) => row.Professor)).size
-  const disciplines = new Set(FACULTY_ROWS.map((row) => row.Department)).size
+export default async function FeaturePills() {
+  const { professors, departments } = await facultyStats()
 
   return (
     <div className="flex flex-wrap gap-3 justify-center text-sm">
@@ -13,7 +12,7 @@ export default function FeaturePills() {
       </div>
       <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-slate-200">
         <BookOpen className="w-4 h-4 text-indigo-600" />
-        <span className="text-slate-600">{disciplines} Disciplines</span>
+        <span className="text-slate-600">{departments} Disciplines</span>
       </div>
       <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-slate-200">
         <Sparkles className="w-4 h-4 text-indigo-600" />

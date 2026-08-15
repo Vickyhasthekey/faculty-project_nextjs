@@ -1,37 +1,40 @@
+import { env, pipeline } from "@huggingface/transformers"
+
 export const EMBED_DIM = 384
+export const EMBED_MODEL = "onnx-community/all-MiniLM-L6-v2-ONNX"
 
-function tokenize(text: string): string[] {
-  const words = text
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, " ")
-    .split(/\s+/)
-    .filter(Boolean)
-  const tokens = [...words]
-  for (let i = 0; i < words.length - 1; i++) {
-    tokens.push(`${words[i]}_${words[i + 1]}`)
+env.allowLocalModels = false
+
+type MiniLMExtractor = Awaited<ReturnType<typeof pipeline<"feature-extraction">>>
+
+let extractorPromise: Promise<MiniLMExtractor> | null = null
+
+function getExtractor(): Promise<MiniLMExtractor> {
+  if (!extractorPromise) {
+    extractorPromise = pipeline("feature-extraction", EMBED_MODEL)
   }
-  return tokens
+  return extractorPromise
 }
 
-function hash32(value: string): number {
-  let h = 2166136261
-  for (let i = 0; i < value.length; i++) {
-    h ^= value.charCodeAt(i)
-    h = Math.imul(h, 16777619)
-  }
-  return h >>> 0
+function asVectors(list: number[] | number[][]): number[][] {
+  if (list.length === 0) return []
+  if (typeof list[0] === "number") return [list as number[]]
+  return list as number[][]
 }
 
-export function embedText(text: string): number[] {
-  const vector = new Array<number>(EMBED_DIM).fill(0)
-  for (const token of tokenize(text)) {
-    const hashed = hash32(token)
-    const index = hashed % EMBED_DIM
-    vector[index] += hashed & 1 ? 1 : -1
+export async function embedText(text: string): Promise<number[]> {
+  const extractor = await getExtractor()
+  const output = await extractor(text, { pooling: "mean", normalize: true })
+  return asVectors(output.tolist() as number[] | number[][])[0]
+}
+
+export async function embedTexts(texts: string[], batchSize = 32): Promise<number[][]> {
+  const extractor = await getExtractor()
+  const vectors: number[][] = []
+  for (let start = 0; start < texts.length; start += batchSize) {
+    const batch = texts.slice(start, start + batchSize)
+    const output = await extractor(batch, { pooling: "mean", normalize: true })
+    vectors.push(...asVectors(output.tolist() as number[] | number[][]))
   }
-  let norm = 0
-  for (const value of vector) norm += value * value
-  norm = Math.sqrt(norm)
-  if (norm === 0) return vector
-  return vector.map((value) => value / norm)
+  return vectors
 }
