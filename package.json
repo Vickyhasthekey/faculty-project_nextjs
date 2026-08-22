@@ -7,9 +7,13 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --experimental-strip-types --test lib/search.test.ts lib/embed.test.ts lib/faculty.test.ts"
+    "test": "node --experimental-strip-types --test lib/search.test.ts lib/embed.test.ts lib/faculty.test.ts lib/store.test.ts",
+    "embed-faculty": "node --experimental-strip-types scripts/precompute-embeddings.ts",
+    "seed-neon": "node --experimental-strip-types scripts/seed-neon.ts"
   },
   "dependencies": {
+    "@huggingface/transformers": "^4.2.0",
+    "@neondatabase/serverless": "^1.1.0",
     "lucide-react": "^0.554.0",
     "mysql2": "^3.15.3",
     "next": "16.2.6",

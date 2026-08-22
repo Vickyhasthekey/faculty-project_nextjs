@@ -4,5 +4,5 @@ import { filterOptions } from "@/lib/faculty"
 export const runtime = "nodejs"
 
 export async function GET() {
-  return NextResponse.json(filterOptions())
+  return NextResponse.json(await filterOptions())
 }

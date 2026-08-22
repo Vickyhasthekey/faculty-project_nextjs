@@ -2,6 +2,7 @@ import { NextRequest } from "next/server"
 import { streamGeminiChat } from "@/lib/chat"
 
 export const runtime = "nodejs"
+export const maxDuration = 60
 
 export async function POST(request: NextRequest) {
   const body = await request.json()

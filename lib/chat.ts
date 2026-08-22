@@ -52,7 +52,7 @@ export async function streamGeminiChat(
   message: string,
   history: ChatTurn[] | undefined,
 ): Promise<ReadableStream<Uint8Array>> {
-  const hits = searchFaculty(message, { topK: 8 })
+  const hits = await searchFaculty(message, { topK: 8 })
   const apiKey = process.env.GEMINI_API_KEY
   const encoder = new TextEncoder()
 
