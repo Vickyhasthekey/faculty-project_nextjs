@@ -14,12 +14,25 @@ export async function POST(request: NextRequest) {
     })
   }
 
-  const stream = await streamGeminiChat(message, body.history)
-  return new Response(stream, {
+  const priorHits = Array.isArray(body.priorHits)
+    ? body.priorHits.filter(
+        (hit: { Professor?: unknown }) => hit && typeof hit.Professor === "string",
+      )
+    : undefined
+  try {
+    const stream = await streamGeminiChat(message, body.history, priorHits)
+    return new Response(stream, {
     headers: {
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache",
       "Connection": "keep-alive",
     },
-  })
+    })
+  } catch (error) {
+    console.error("Chat API error:", error)
+    return new Response(JSON.stringify({ error: "Failed to search faculty" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    })
+  }
 }

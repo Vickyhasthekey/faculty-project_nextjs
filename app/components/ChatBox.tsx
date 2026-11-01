@@ -1,8 +1,70 @@
 'use client'
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, type ReactNode } from "react"
 import { MessageCircle, Send, X } from "lucide-react"
 
-type Message = { role: "user" | "assistant"; content: string }
+type FacultyCard = {
+  Professor: string
+  University: string
+  Department: string
+  Interest?: string
+  Interests?: string[]
+  "Personal Website"?: string
+}
+
+type Message = { role: "user" | "assistant"; content: string; hits?: FacultyCard[] }
+
+const STARTERS = ["Who works on medical imaging?", "Compare two robotics professors"]
+
+function renderInline(text: string, keyPrefix: string) {
+  const parts = text.split(/(\*\*[^*]+\*\*|\[[^\]]+\]\(https?:\/\/[^)\s]+\))/g)
+  return parts.map((part, index) => {
+    const key = `${keyPrefix}-${index}`
+    const bold = part.match(/^\*\*([^*]+)\*\*$/)
+    if (bold) return <strong key={key}>{bold[1]}</strong>
+    const link = part.match(/^\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)$/)
+    if (!link) return <span key={key}>{part}</span>
+    return (
+      <a key={key} href={link[2]} target="_blank" rel="noopener noreferrer" className="underline">
+        {link[1]}
+      </a>
+    )
+  })
+}
+
+function renderAssistant(text: string) {
+  const blocks: ReactNode[] = []
+  let items: string[] = []
+
+  const flushList = () => {
+    if (items.length === 0) return
+    const list = items
+    items = []
+    blocks.push(
+      <ul key={`list-${blocks.length}`} className="list-disc space-y-2 pl-4">
+        {list.map((item, index) => (
+          <li key={index}>{renderInline(item, `item-${blocks.length}-${index}`)}</li>
+        ))}
+      </ul>,
+    )
+  }
+
+  for (const line of text.split("\n")) {
+    const item = line.match(/^\s*[-*]\s+(.*)$/)
+    if (item) {
+      items.push(item[1])
+      continue
+    }
+    flushList()
+    if (!line.trim()) continue
+    blocks.push(
+      <p key={`p-${blocks.length}`} className="mb-2 last:mb-0">
+        {renderInline(line, `p-${blocks.length}`)}
+      </p>,
+    )
+  }
+  flushList()
+  return blocks
+}
 
 export default function ChatBox() {
   const [open, setOpen] = useState(false)
@@ -15,11 +77,12 @@ export default function ChatBox() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" })
   }, [messages])
 
-  const handleSend = async () => {
-    const text = input.trim()
+  const handleSend = async (preset?: string) => {
+    const text = (preset ?? input).trim()
     if (!text || loading) return
 
     const history = messages
+    const priorHits = history.flatMap((message) => message.hits ?? [])
     const nextMessages: Message[] = [...messages, { role: "user", content: text }, { role: "assistant", content: "" }]
     setMessages(nextMessages)
     setInput("")
@@ -29,7 +92,7 @@ export default function ChatBox() {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text, history }),
+        body: JSON.stringify({ message: text, history, priorHits }),
       })
 
       if (!res.ok) {
@@ -58,7 +121,16 @@ export default function ChatBox() {
           if (payload === "[DONE]") continue
           try {
             const obj = JSON.parse(payload)
-            if (obj.delta) {
+            if (Array.isArray(obj.hits)) {
+              setMessages((prev) => {
+                const updated = [...prev]
+                const last = updated[updated.length - 1]
+                if (last && last.role === "assistant") {
+                  updated[updated.length - 1] = { ...last, hits: obj.hits }
+                }
+                return updated
+              })
+            } else if (obj.delta) {
               setMessages((prev) => {
                 const updated = [...prev]
                 const last = updated[updated.length - 1]
@@ -72,7 +144,11 @@ export default function ChatBox() {
                 const updated = [...prev]
                 const last = updated[updated.length - 1]
                 if (last && last.role === "assistant") {
-                  updated[updated.length - 1] = { ...last, content: `Error: ${obj.error}` }
+                  const note = `Error: ${obj.error}`
+                  updated[updated.length - 1] = {
+                    ...last,
+                    content: last.content ? `${last.content}\n\n${note}` : note,
+                  }
                 }
                 return updated
               })
@@ -114,7 +190,7 @@ export default function ChatBox() {
               <div className="p-1.5 bg-white rounded-lg shadow-sm">
                 <MessageCircle className="w-4 h-4 text-indigo-600" />
               </div>
-              <span className="font-semibold text-slate-800 text-sm">Ask anything</span>
+              <span className="font-semibold text-slate-800 text-sm">Find a professor</span>
             </div>
             <button
               onClick={() => setOpen(false)}
@@ -128,26 +204,68 @@ export default function ChatBox() {
           {/* Messages */}
           <div ref={scrollRef} className="h-96 overflow-y-auto px-5 py-4 space-y-3 text-left">
             {messages.length === 0 && (
-              <p className="text-slate-400 text-sm text-center py-8">
-                Start a conversation — ask anything you'd like.
-              </p>
+              <div className="py-6 space-y-3">
+                <p className="text-slate-500 text-sm text-center">
+                  Ask who studies a topic. Replies cite professors and link to their pages.
+                </p>
+                <div className="flex flex-col gap-2">
+                  {STARTERS.map((prompt) => (
+                    <button
+                      key={prompt}
+                      onClick={() => handleSend(prompt)}
+                      className="text-left text-sm px-3 py-2 rounded-xl border border-slate-200 text-slate-700 hover:border-indigo-300 hover:text-indigo-700"
+                    >
+                      {prompt}
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                <div className={`max-w-[85%] space-y-2 ${m.role === "user" ? "" : "w-full"}`}>
                 <div
-                  className={`max-w-[80%] px-4 py-2 rounded-2xl whitespace-pre-wrap text-sm ${
+                  className={`px-4 py-2 rounded-2xl text-sm ${
                     m.role === "user"
-                      ? "bg-linear-to-r from-indigo-600 to-purple-600 text-white"
+                      ? "whitespace-pre-wrap bg-linear-to-r from-indigo-600 to-purple-600 text-white"
                       : "bg-slate-100 text-slate-800"
                   }`}
                 >
-                  {m.content || (loading && i === messages.length - 1 ? (
+                  {m.content ? (m.role === "assistant" ? renderAssistant(m.content) : m.content) : (loading && i === messages.length - 1 ? (
                     <span className="inline-flex gap-1">
                       <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
                       <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "120ms" }} />
                       <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "240ms" }} />
                     </span>
                   ) : "")}
+                </div>
+                {m.role === "assistant" && m.hits && m.hits.length > 0 && (
+                  <ul className="space-y-2">
+                    {m.hits.map((hit) => {
+                      const website = hit["Personal Website"]?.trim()
+                      const interests = hit.Interests?.length ? hit.Interests : hit.Interest ? [hit.Interest] : []
+                      return (
+                        <li key={`${hit.Professor}-${hit.Department}`} className="rounded-xl border border-slate-200 bg-white px-3 py-2">
+                          <p className="text-sm font-semibold text-slate-800">{hit.Professor}</p>
+                          <p className="text-xs text-slate-500">{hit.University} · {hit.Department}</p>
+                          {interests.length > 0 && (
+                            <p className="text-xs text-slate-600 mt-1 line-clamp-2">{interests.join(" · ")}</p>
+                          )}
+                          {website && (
+                            <a
+                              href={website}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="mt-1 inline-block text-xs font-medium text-indigo-600 underline"
+                            >
+                              Website
+                            </a>
+                          )}
+                        </li>
+                      )
+                    })}
+                  </ul>
+                )}
                 </div>
               </div>
             ))}
@@ -158,7 +276,7 @@ export default function ChatBox() {
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyPress}
+              onKeyDown={(e) => handleKeyPress(e)}
               placeholder="Type a message..."
               disabled={loading}
               className="flex-1 py-2 px-3 text-slate-800 placeholder-slate-400 focus:outline-none text-sm bg-transparent disabled:opacity-60"

@@ -13,7 +13,7 @@
     "build": "node --experimental-strip-types scripts/cache-embed-model.ts && next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --experimental-strip-types --test lib/search.test.ts lib/embed.test.ts lib/faculty.test.ts lib/store.test.ts",
+    "test": "node --experimental-strip-types --test lib/search.test.ts lib/embed.test.ts lib/faculty.test.ts lib/store.test.ts lib/chat.test.ts",
     "embed-faculty": "node --experimental-strip-types scripts/precompute-embeddings.ts",
     "seed-neon": "node --experimental-strip-types scripts/seed-neon.ts"
   },

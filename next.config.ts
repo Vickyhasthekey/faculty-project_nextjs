@@ -10,6 +10,10 @@ const nextConfig: NextConfig = {
       "./node_modules/@huggingface/transformers/.cache/**/*",
     ],
     "/api/filters": ["./node_modules/onnxruntime-node/bin/napi-v6/linux/x64/*"],
+    "/api/chat": [
+      "./node_modules/onnxruntime-node/bin/napi-v6/linux/x64/*",
+      "./node_modules/@huggingface/transformers/.cache/**/*",
+    ],
   },
 };
 
