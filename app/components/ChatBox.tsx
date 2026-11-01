@@ -282,7 +282,7 @@ export default function ChatBox() {
               className="flex-1 py-2 px-3 text-slate-800 placeholder-slate-400 focus:outline-none text-sm bg-transparent disabled:opacity-60"
             />
             <button
-              onClick={handleSend}
+              onClick={() => handleSend()}
               disabled={loading || !input.trim()}
               className="bg-linear-to-r from-indigo-600 to-purple-600 text-white font-semibold p-2.5 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
               aria-label="Send"
