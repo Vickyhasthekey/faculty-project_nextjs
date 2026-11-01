@@ -4,7 +4,9 @@ import type { FacultyStore } from "./types.ts"
 
 let store: FacultyStore | null = null
 
-export function createFacultyStore(env: { DATABASE_URL?: string } = process.env): FacultyStore {
+export function createFacultyStore(
+  env: { DATABASE_URL?: string } = { DATABASE_URL: process.env.DATABASE_URL },
+): FacultyStore {
   const databaseUrl = env.DATABASE_URL?.trim()
   if (databaseUrl) return new NeonFacultyStore(databaseUrl)
   return createJsonFacultyStore()
@@ -12,7 +14,7 @@ export function createFacultyStore(env: { DATABASE_URL?: string } = process.env)
 
 /** Neon when DATABASE_URL is set (live rows). JSON bundle otherwise. */
 export function getFacultyStore(): FacultyStore {
-  if (!store) store = createFacultyStore(process.env)
+  if (!store) store = createFacultyStore()
   return store
 }
 
