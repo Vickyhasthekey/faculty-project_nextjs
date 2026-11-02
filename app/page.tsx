@@ -1,4 +1,3 @@
-import { Sparkles } from "lucide-react"
 import SearchBox from './components/SearchBox'
 import FeaturePills from './components/FeaturePills'
 import ChatBox from './components/ChatBox'
@@ -10,7 +9,13 @@ export default function SearchPage() {
       <header className="bg-white border-b border-slate-200 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-6 h-6 text-indigo-600" />
+            <img
+              src="/profmatch-icon.png?v=2"
+              alt=""
+              width={36}
+              height={36}
+              className="w-9 h-9"
+            />
             <span className="text-xl font-semibold text-slate-800">ProfMatch</span>
           </div>
         </div>

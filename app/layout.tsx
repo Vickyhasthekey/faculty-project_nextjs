@@ -13,8 +13,19 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://faculty-project-three.vercel.app"),
   title: "ProfMatch",
   description: "Find professors whose research matches your interests.",
+  openGraph: {
+    title: "ProfMatch",
+    description: "Find professors whose research matches your interests.",
+    siteName: "ProfMatch",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ProfMatch",
+    description: "Find professors whose research matches your interests.",
+  },
 };
 
 export default function RootLayout({
